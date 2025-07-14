@@ -9,6 +9,7 @@ class ProductDetailPage extends StatefulWidget {
     super.key,
     required this.product,
     required this.onAddToCart,
+    required Null Function(dynamic editedProduct) onEdit,
   });
 
   @override
@@ -26,7 +27,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Image.network(p.imageUrl, height: 200),
+            Image.asset(p.imageUrl, height: 200),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(p.description),
