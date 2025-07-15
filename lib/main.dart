@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'product.dart';
+import 'product_list_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(PoseMarketApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class PoseMarketApp extends StatelessWidget {
+  const PoseMarketApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: const MyHomePage(title: 'Flutter Demo Home Page'));
+    return MaterialApp(
+      title: 'POSEMARKET',
+      theme: ThemeData(primarySwatch: Colors.purple),
+      home: ProductListPage(),
+    );
   }
 }
