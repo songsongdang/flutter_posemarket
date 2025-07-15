@@ -20,6 +20,7 @@ class _ProductAddPageState extends State<ProductAddPage> {
     'assets/pomroller.png',
     'assets/yogaclothes.png',
     'assets/rope.png',
+    'assets/yogablock.png',
     // ...더 추가 가능
   ];
 

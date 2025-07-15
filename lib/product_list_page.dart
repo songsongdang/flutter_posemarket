@@ -49,7 +49,10 @@ class _ProductListPageState extends State<ProductListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('PoseMarket'),
+        title: Text(
+          'POSEMARKET',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+        ),
         actions: [
           IconButton(icon: Icon(Icons.search), onPressed: () {}),
           IconButton(
@@ -70,13 +73,12 @@ class _ProductListPageState extends State<ProductListPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 4:3 비율 세일 배너
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: AspectRatio(
-                aspectRatio: 4 / 3,
+                aspectRatio: 1 / 1,
                 child: Image.asset(
-                  'assets/sale.2.png',
+                  'assets/summersale.png',
                   fit: BoxFit.cover,
                   width: double.infinity,
                 ),
