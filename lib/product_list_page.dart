@@ -113,7 +113,7 @@ class _ProductListPageState extends State<ProductListPage> {
                   final p = popularProducts[index];
                   return GestureDetector(
                     onTap: () async {
-                      await Navigator.push(
+                      final updatedProduct = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => ProductDetailPage(
@@ -131,6 +131,11 @@ class _ProductListPageState extends State<ProductListPage> {
                           ),
                         ),
                       );
+                      if (updatedProduct != null) {
+                        setState(() {
+                          defaultProducts[index] = updatedProduct;
+                        });
+                      }
                     },
                     child: Card(
                       elevation: 3,
@@ -198,7 +203,7 @@ class _ProductListPageState extends State<ProductListPage> {
                     final p = userProducts[index];
                     return GestureDetector(
                       onTap: () async {
-                        await Navigator.push(
+                        final updatedProduct = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => ProductDetailPage(
@@ -216,6 +221,11 @@ class _ProductListPageState extends State<ProductListPage> {
                             ),
                           ),
                         );
+                        if (updatedProduct != null) {
+                          setState(() {
+                            userProducts[index] = updatedProduct;
+                          });
+                        }
                       },
                       child: Card(
                         elevation: 3,
