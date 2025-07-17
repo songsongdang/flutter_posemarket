@@ -1,54 +1,110 @@
+// product_list_page.dart
 import 'package:flutter/material.dart';
 import 'product.dart';
 import 'product_detail_page.dart';
 import 'product_add_page.dart';
 import 'cart_page.dart';
 
-class ProductListPage extends StatefulWidget {
-  const ProductListPage({super.key});
+// 검색 Delegate 클래스
+class ProductSearchDelegate extends SearchDelegate<Product?> {
+  final List<Product> allProducts;
+
+  ProductSearchDelegate(this.allProducts);
+
   @override
-  _ProductListPageState createState() => _ProductListPageState();
+  String? get searchFieldLabel => '상품 이름으로 검색';
+
+  @override
+  List<Widget>? buildActions(BuildContext context) {
+    return [
+      if (query.isNotEmpty)
+        IconButton(icon: Icon(Icons.clear), onPressed: () => query = ''),
+    ];
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () => close(context, null),
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    final results = allProducts
+        .where((p) => p.name.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+    if (results.isEmpty) {
+      return Center(child: Text('검색 결과가 없습니다.'));
+    }
+    return ListView(
+      children: results.map((product) {
+        return ListTile(
+          leading: Image.asset(product.imageUrl, width: 48, height: 48),
+          title: Text(product.name),
+          subtitle: Text('${product.price}원'),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ProductDetailPage(
+                  product: product,
+                  onAddToCart: (count) {},
+                  onEdit: (_) {},
+                ),
+              ),
+            );
+          },
+        );
+      }).toList(),
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    final suggestions = query.isEmpty
+        ? []
+        : allProducts
+              .where((p) => p.name.toLowerCase().contains(query.toLowerCase()))
+              .toList();
+
+    return ListView(
+      children: suggestions.map((product) {
+        return ListTile(
+          leading: Image.asset(product.imageUrl, width: 40, height: 40),
+          title: Text(product.name),
+          onTap: () {
+            query = product.name;
+            showResults(context);
+          },
+        );
+      }).toList(),
+    );
+  }
+}
+
+class ProductListPage extends StatefulWidget {
+  final List<Product> defaultProducts;
+  final List<Product> userProducts;
+  final Map<String, int> cart;
+
+  const ProductListPage({
+    Key? key,
+    required this.defaultProducts,
+    required this.userProducts,
+    required this.cart,
+  }) : super(key: key);
+
+  @override
+  State<ProductListPage> createState() => _ProductListPageState();
 }
 
 class _ProductListPageState extends State<ProductListPage> {
-  // 4개 기본 인기상품
-  List<Product> defaultProducts = [
-    Product(
-      id: '1',
-      name: '폼롤러',
-      price: 15000,
-      imageUrl: 'assets/pomroller.png',
-      description: '근막 이완에 좋은 폼롤러',
-    ),
-    Product(
-      id: '2',
-      name: '마사지볼',
-      price: 9000,
-      imageUrl: 'assets/massageball.png',
-      description: '근육 뭉침 해소에 탁월한 마사지볼',
-    ),
-    Product(
-      id: '3',
-      name: '줄넘기',
-      price: 12000,
-      imageUrl: 'assets/rope.png',
-      description: '유산소 운동에 좋은 줄넘기',
-    ),
-    Product(
-      id: '4',
-      name: '여성 요가복',
-      price: 29000,
-      imageUrl: 'assets/yogaclothes.png',
-      description: '편안한 착용감의 밝은색 여성 요가복',
-    ),
-  ];
-  List<Product> userProducts = [];
-  Map<String, int> cart = {};
-
   @override
   Widget build(BuildContext context) {
-    final popularProducts = defaultProducts.take(4).toList();
-    final allProducts = [...defaultProducts, ...userProducts];
+    final popularProducts = widget.defaultProducts.take(6).toList();
+    final allProducts = [...widget.defaultProducts, ...widget.userProducts];
 
     return Scaffold(
       appBar: AppBar(
@@ -57,15 +113,27 @@ class _ProductListPageState extends State<ProductListPage> {
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
         actions: [
-          IconButton(icon: Icon(Icons.search), onPressed: () {}),
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () async {
+              final allProducts = [
+                ...widget.defaultProducts,
+                ...widget.userProducts,
+              ];
+              await showSearch(
+                context: context,
+                delegate: ProductSearchDelegate(allProducts),
+              );
+            },
+          ),
           IconButton(
             icon: Icon(Icons.shopping_cart),
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      CartPage(cart: cart, products: allProducts),
+                  builder: (_) =>
+                      CartPage(cart: widget.cart, products: allProducts),
                 ),
               );
             },
@@ -76,7 +144,6 @@ class _ProductListPageState extends State<ProductListPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 상단 배너
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: AspectRatio(
@@ -88,7 +155,6 @@ class _ProductListPageState extends State<ProductListPage> {
                 ),
               ),
             ),
-            // 인기상품 텍스트
             Padding(
               padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
               child: Text(
@@ -96,7 +162,6 @@ class _ProductListPageState extends State<ProductListPage> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
-            // 인기상품 카드 4개 진열 (2열 그리드)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: GridView.builder(
@@ -116,16 +181,17 @@ class _ProductListPageState extends State<ProductListPage> {
                       final updatedProduct = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ProductDetailPage(
+                          builder: (_) => ProductDetailPage(
                             product: p,
                             onAddToCart: (count) {
                               setState(() {
-                                cart[p.id] = (cart[p.id] ?? 0) + count;
+                                widget.cart[p.id] =
+                                    (widget.cart[p.id] ?? 0) + count;
                               });
                             },
                             onEdit: (editedProduct) {
                               setState(() {
-                                defaultProducts[index] = editedProduct;
+                                widget.defaultProducts[index] = editedProduct;
                               });
                             },
                           ),
@@ -133,7 +199,7 @@ class _ProductListPageState extends State<ProductListPage> {
                       );
                       if (updatedProduct != null) {
                         setState(() {
-                          defaultProducts[index] = updatedProduct;
+                          widget.defaultProducts[index] = updatedProduct;
                         });
                       }
                     },
@@ -177,16 +243,15 @@ class _ProductListPageState extends State<ProductListPage> {
                 },
               ),
             ),
-            // 사용자 등록 상품
-            if (userProducts.isNotEmpty)
+            if (widget.userProducts.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(left: 16, top: 24, bottom: 8),
                 child: Text(
-                  '새로 등록한 상품',
+                  '신상품',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
-            if (userProducts.isNotEmpty)
+            if (widget.userProducts.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: GridView.builder(
@@ -198,24 +263,25 @@ class _ProductListPageState extends State<ProductListPage> {
                     crossAxisSpacing: 12,
                     childAspectRatio: 3 / 4,
                   ),
-                  itemCount: userProducts.length,
+                  itemCount: widget.userProducts.length,
                   itemBuilder: (context, index) {
-                    final p = userProducts[index];
+                    final p = widget.userProducts[index];
                     return GestureDetector(
                       onTap: () async {
                         final updatedProduct = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ProductDetailPage(
+                            builder: (_) => ProductDetailPage(
                               product: p,
                               onAddToCart: (count) {
                                 setState(() {
-                                  cart[p.id] = (cart[p.id] ?? 0) + count;
+                                  widget.cart[p.id] =
+                                      (widget.cart[p.id] ?? 0) + count;
                                 });
                               },
                               onEdit: (editedProduct) {
                                 setState(() {
-                                  userProducts[index] = editedProduct;
+                                  widget.userProducts[index] = editedProduct;
                                 });
                               },
                             ),
@@ -223,7 +289,7 @@ class _ProductListPageState extends State<ProductListPage> {
                         );
                         if (updatedProduct != null) {
                           setState(() {
-                            userProducts[index] = updatedProduct;
+                            widget.userProducts[index] = updatedProduct;
                           });
                         }
                       },
@@ -280,23 +346,15 @@ class _ProductListPageState extends State<ProductListPage> {
         onPressed: () async {
           final newProduct = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ProductAddPage()),
+            MaterialPageRoute(builder: (_) => ProductAddPage()),
           );
           if (newProduct != null) {
             setState(() {
-              userProducts.add(newProduct);
+              widget.userProducts.add(newProduct);
             });
           }
         },
         child: Icon(Icons.add),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: '마이페이지'),
-        ],
-        currentIndex: 0,
-        onTap: (idx) {},
       ),
     );
   }
