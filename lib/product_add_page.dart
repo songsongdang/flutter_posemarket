@@ -13,7 +13,9 @@ class _ProductAddPageState extends State<ProductAddPage> {
   String desc = '';
   String? assetImagePath;
 
-  // assets 폴더 이미지 선택 다이얼로그
+  // 가격 필드 전용 컨트롤러와 커서 위치 상태
+  final TextEditingController priceController = TextEditingController();
+
   final List<String> imageAssets = [
     'assets/bike.png',
     'assets/massageball.png',
@@ -23,12 +25,16 @@ class _ProductAddPageState extends State<ProductAddPage> {
     'assets/yogablock.png',
     'assets/socks.png',
     'assets/sportbra.png',
-
-    // ...더 추가 가능
   ];
 
-  Future<void> pickAssetImage(BuildContext context) async {
-    final selected = await showDialog<String>(
+  @override
+  void dispose() {
+    priceController.dispose();
+    super.dispose();
+  }
+
+  Future pickAssetImage(BuildContext context) async {
+    final selected = await showDialog(
       context: context,
       builder: (ctx) => SimpleDialog(
         title: Text('이미지 선택'),
@@ -52,8 +58,23 @@ class _ProductAddPageState extends State<ProductAddPage> {
   Widget _buildImagePreview() {
     if (assetImagePath != null) {
       return Image.asset(assetImagePath!, height: 100);
+    } else {
+      return Text('이미지를 선택하세요.');
     }
-    return Text('이미지를 선택하세요.');
+  }
+
+  // 숫자만 추출하는 함수
+  String _unformatNumber(String input) =>
+      input.replaceAll(RegExp('[^0-9]'), '');
+
+  // 입력값을 3자리마다 콤마가 찍히도록 포맷팅
+  String _formatNumber(String input) {
+    if (input.isEmpty) return '';
+    final n = int.parse(input);
+    return n.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (m) => '${m[1]},',
+    );
   }
 
   @override
@@ -77,12 +98,38 @@ class _ProductAddPageState extends State<ProductAddPage> {
                 onChanged: (v) => name = v,
               ),
               TextFormField(
+                controller: priceController,
                 decoration: InputDecoration(labelText: '상품 가격'),
                 keyboardType: TextInputType.number,
-                validator: (v) => v == null || v.isEmpty
-                    ? '필수 입력'
-                    : (int.tryParse(v) == null ? '숫자만 입력' : null),
-                onChanged: (v) => price = v,
+                validator: (v) {
+                  final raw = _unformatNumber(v ?? '');
+                  if (raw.isEmpty) return '필수 입력';
+                  if (int.tryParse(raw) == null) return '숫자만 입력';
+                  return null;
+                },
+                onChanged: (String v) {
+                  // 숫자만 추출
+                  String onlyNumber = _unformatNumber(v);
+                  if (onlyNumber.isEmpty) {
+                    price = '';
+                    priceController.text = '';
+                    priceController.selection = TextSelection.collapsed(
+                      offset: 0,
+                    );
+                    return;
+                  }
+                  // 3자리마다 콤마 추가
+                  String formatted = _formatNumber(onlyNumber);
+                  // price에 숫자만 저장(나중에 int로 변환)
+                  price = onlyNumber;
+                  // 커서 위치를 끝으로 이동
+                  priceController.value = TextEditingValue(
+                    text: formatted,
+                    selection: TextSelection.collapsed(
+                      offset: formatted.length,
+                    ),
+                  );
+                },
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: '상품 설명'),
@@ -96,9 +143,9 @@ class _ProductAddPageState extends State<ProductAddPage> {
                   if (_formKey.currentState!.validate() &&
                       assetImagePath != null) {
                     final newProduct = Product(
-                      id: DateTime.now().toString(),
+                      id: DateTime.now().microsecondsSinceEpoch.toString(),
                       name: name,
-                      price: int.parse(price),
+                      price: int.parse(price), // 콤마 없는 숫자만 저장
                       imageUrl: assetImagePath!,
                       description: desc,
                     );
