@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'product.dart';
 import 'product_list_page.dart';
 import 'category_page.dart';
-import 'cart_page.dart';
 import 'mypage.dart';
 
+// main.dart
 void main() {
   runApp(PoseMarketApp());
 }
@@ -23,12 +23,16 @@ class PoseMarketApp extends StatelessWidget {
 }
 
 class MainNavigation extends StatefulWidget {
+  const MainNavigation({super.key});
+
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
 
 class _MainNavigationState extends State<MainNavigation> {
   int currentIndex = 0;
+
+  // 상품 및 장바구니 상태 - 프로젝트 전체 공유
   final List<Product> defaultProducts = [
     Product(
       id: '1',
@@ -73,13 +77,13 @@ class _MainNavigationState extends State<MainNavigation> {
       description: '색깔별로 골라신는 요가양말, 미끄럼 방지 기술 적용',
     ),
   ];
+
   final List<Product> userProducts = [];
   final Map<String, int> cart = {};
 
   @override
   Widget build(BuildContext context) {
     final allProducts = [...defaultProducts, ...userProducts];
-
     return Scaffold(
       body: IndexedStack(
         index: currentIndex,
@@ -94,13 +98,13 @@ class _MainNavigationState extends State<MainNavigation> {
             userProducts: userProducts,
             cart: cart,
           ),
-          MyPage(),
+          MyPage(cart: cart, allProducts: allProducts),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: (idx) => setState(() => currentIndex = idx),
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
           BottomNavigationBarItem(icon: Icon(Icons.category), label: '카테고리'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: '마이페이지'),
