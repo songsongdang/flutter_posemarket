@@ -1,16 +1,37 @@
-# flutter_posemarket
+# POSEMARKET
 
-A new Flutter project.
+쇼핑몰 앱 - Flutter 예제 프로젝트
+쇼핑몰 이름 - POSEMARKET
 
-## Getting Started
+## 소개
 
-This project is a starting point for a Flutter application.
+POSEMARKET은 폼롤러, 요가의류, 운동기구 등 다양한 피트니스 상품을 검색하고 구매할 수 있는 모바일 앱입니다.
 
-A few resources to get you started if this is your first Flutter project:
+## 주요 기능
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- 인기상품, 신상품 둘 다 그리드로 진열
+- 상품명/설명/가격/이미지 등록 및 수정
+- 3자리마다 쉼표로 가격 포맷
+- 상품 실시간 검색
+- 장바구니 및 구매 기능
+- 마이페이지(장바구니, 주문내역, 설정 등)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 도전 기능 구성
+
+- 카테고리 페이지 추가
+- 카테고리 페이지에서 인기상품/가격순 상품정렬
+- 홈 화면 상단 '검색' 아이콘에서 상품 검색 기능 추가
+- 장바구니에서 선택상품 or 전체상품 삭제 기능 추가
+- 마이페이지 구현
+- 마이페이지 기능은 장바구니 기능 제외하고는 메뉴를 구성만 해 둠
+
+## 스크린샷
+
+홈화면 예시:
+![홈화면](assets/readme/screenshot_home.png)
+
+카테고리 화면 예시:
+![카테고리화면](assets/readme/screenshot_category.png)
+
+마이페이지 화면 예시:
+![마이페이지화면](assets/readme/screenshot_mypage.png)
